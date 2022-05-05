@@ -233,7 +233,7 @@ def main(stat_type):
                 showImage(player)
                 printInfo(player)
                 
-            # Print information about the players
+
             playerSum(p1)
             playerSum(p2)
           
