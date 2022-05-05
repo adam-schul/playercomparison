@@ -11,9 +11,6 @@ from PIL import Image
 import requests
 from basketball_reference_scraper.players import get_player_headshot
 
-
-
-
 # Print a title
 display(HTML("<h1><font color='#0b2652'>NBA Player Comparison</font></h1>"))
 
@@ -27,7 +24,6 @@ def main(stat_type):
         chosen_table = 0
     elif stat_type == ' Season Total':
         chosen_table = 2
-        
 
     # This section takes the dataframe from the website and reads the column names into a list for the drop down menu
     df = pd.read_html(f'https://www.basketball-reference.com/players/j/jordami01.html')[chosen_table]
@@ -182,19 +178,30 @@ def main(stat_type):
                     line=dict(color='green', width=4))
                     )
 
-            # If not a percentage stat, add season total or per game to the title of the graph
+            # If not a percentage stat, add 'season total' or 'per game' to the title of the graph
             ball = ''
-            if '%' not in stat:
-                ball = stat_type     
-
-            # Add more formatting to the graph
+            if '%' not in stat and stat != 'G':
+                ball = stat_type  
+            
+            # Expand the statistic for the title
+            if stat == 'G':
+                stat1 = 'Games Played'
+            elif stat == 'GS':
+                stat1 = 'Games Started'
+            elif stat == 'MP':
+                stat1 = 'Minutes Played'
+            elif stat == 'TRB':
+                stat1 = 'Total Rebounds'
+            else:
+                stat1 = stat
+            
             graph.update_layout(
                 font_family="Arial",
                 font_color='#e9edf7',
                 title_font_family="Arial",
                 title_font_color="#e9edf7",
                 legend_title_font_color="#e9edf7",
-                title = {'text': f'<b>Comparison of {stat}{ball} Between {p1} and {p2}, {start_season}-{second}</b>', 
+                title = {'text': f'<b>Comparison of {stat1}{ball} Between {p1} and {p2}, {start_season}-{second}</b>', 
                         'xanchor': 'center',
                         'y':0.90,
                         'x':0.5,
@@ -203,9 +210,11 @@ def main(stat_type):
                 xaxis = dict(showgrid = True),
                 yaxis = dict(showgrid = True),
                 xaxis_title='Season',
-                yaxis_title=stat,
-            )
+                yaxis_title=stat)
 
+            # Display the graph
+            graph.show()
+            
             # Function for printing info about the players
             def printInfo(name):
                 try:
@@ -214,19 +223,19 @@ def main(stat_type):
                 except:
                     display(HTML(f"<p><font color='black'>No information found on {name}.</font></p>"))
 
-            # Display the graph
-            graph.show()
-
+            def showImage(player):
+                url = get_player_headshot(player)
+                image_object = requests.get(url, stream=True)
+                image = Image.open(image_object.raw)
+                display(image)
+                
+            def playerSum(player):
+                showImage(player)
+                printInfo(player)
+                
             # Print information about the players
-            printInfo(p1)
-            url1 = get_player_headshot(p1)
-            im1 = Image.open(requests.get(url1, stream=True).raw)
-            display(im1)
-
-            printInfo(p2)
-            url2 = get_player_headshot(p2)
-            im2 = Image.open(requests.get(url2, stream=True).raw)
-            display(im2)
+            playerSum(p1)
+            playerSum(p2)
           
         except:
             display(HTML(f"<p><font color='black'>Player name invalid. Please check your spelling or try another player.</font></p>"))
